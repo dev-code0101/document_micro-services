@@ -16,6 +16,47 @@ def allowed_file(filename):
     )
 
 
+import boto3
+from botocore.exceptions import NoCredentialsError
+
+s3 = boto3.client(
+    "s3", aws_access_key_id="YOUR_ACCESS_KEY", aws_secret_access_key="YOUR_SECRET_KEY"
+)
+
+app.config["S3_BUCKET"] = "your-s3-bucket-name"
+
+
+def upload_to_s3(file, bucket_name=app.config["S3_BUCKET"], object_name=None):
+    if object_name is None:
+        object_name = file.name
+    try:
+        s3.upload_fileobj(file, bucket_name, object_name)
+    except NoCredentialsError:
+        return False
+    return True
+
+
+from google.cloud import storage
+
+storage_client = storage.Client.from_service_account_json(
+    "path/to/your/credentials.json"
+)
+
+
+def upload_to_gcs(file, bucket_name=app.config["BUCKET_NAME"], object_name=None):
+    if object_name is None:
+        object_name = file.name
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(object_name)
+    blob.upload_from_file(file)
+
+
+def save_locally(file):
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(file_path)
+
+
 @app.route("/upload_document", methods=["POST"])
 @login_required
 def upload_document():
@@ -27,9 +68,7 @@ def upload_document():
         return jsonify({"error": "No selected file"}), 400
 
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(file_path)
+        save_locally(file)
 
         # Save document metadata to the database
         document = Document(name=filename, file_path=file_path)
