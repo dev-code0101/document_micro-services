@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 # Define routes to forward requests to corresponding microservices
 app.url_map.add(Rule("/auth/", endpoint="auth"))
-app.url_map.add(Rule("/artifact/", endpoint="artifact"))
+# app.url_map.add(Rule("/artifact/", endpoint="artifact"))
 app.url_map.add(Rule("/document/", endpoint="document"))
 app.url_map.add(Rule("/signature/", endpoint="signature"))
 
@@ -35,13 +35,13 @@ def auth():
     )
 
 
-@app.endpoint("artifact")
-def artifact():
-    url = f"{artifact_service_url}{request.full_path}"
-    response = requests.request(method=request.method, url=url, json=request.get_json())
-    return Response(
-        response.content, status=response.status_code, headers=response.headers
-    )
+# @app.endpoint("artifact")
+# def artifact():
+#     url = f"{artifact_service_url}{request.full_path}"
+#     response = requests.request(method=request.method, url=url, json=request.get_json())
+#     return Response(
+#         response.content, status=response.status_code, headers=response.headers
+#     )
 
 
 @app.endpoint("document")
