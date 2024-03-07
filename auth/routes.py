@@ -40,30 +40,3 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "Registration successful"})
-
-
-import hashlib
-
-
-@app.route("/generate_signature/<int:artifact_id>/<int:user_id>", methods=["POST"])
-def generate_signature(artifact_id, user_id):
-    # Generate signature using cryptographic hashing
-    signature = hashlib.sha256(f"{artifact_id}{user_id}".encode()).hexdigest()
-
-    return jsonify({"signature": signature})
-
-
-@app.route(
-    "/validate_signature/<int:artifact_id>/<int:user_id>/<string:signature>",
-    methods=["GET"],
-)
-def validate_signature(artifact_id, user_id, signature):
-    # Regenerate signature using the same cryptographic hashing algorithm
-    regenerated_signature = hashlib.sha256(
-        f"{artifact_id}{user_id}".encode()
-    ).hexdigest()
-
-    if regenerated_signature == signature:
-        return jsonify({"valid": True})
-    else:
-        return jsonify({"valid": False})

@@ -14,10 +14,12 @@ app = Flask(__name__)
 app.url_map.add(Rule("/auth/", endpoint="auth"))
 app.url_map.add(Rule("/artifact/", endpoint="artifact"))
 app.url_map.add(Rule("/document/", endpoint="document"))
+app.url_map.add(Rule("/signature/", endpoint="signature"))
 
 # Microservice URLs
 auth_service_url = "http://localhost:5001"
-artifact_service_url = "http://localhost:5002"
+# artifact_service_url = "http://localhost:5002"
+signature_service_url = "http://localhost:5002"
 document_service_url = "http://localhost:5003"
 
 # ProxyFix middleware to handle reverse proxy headers
@@ -45,6 +47,15 @@ def artifact():
 @app.endpoint("document")
 def document():
     url = f"{document_service_url}{request.full_path}"
+    response = requests.request(method=request.method, url=url, json=request.get_json())
+    return Response(
+        response.content, status=response.status_code, headers=response.headers
+    )
+
+
+@app.endpoint("signature")
+def signature():
+    url = f"{signature_service_url}{request.full_path}"
     response = requests.request(method=request.method, url=url, json=request.get_json())
     return Response(
         response.content, status=response.status_code, headers=response.headers
